@@ -2,3 +2,11 @@
 	path = PX4-Autopilot
 	url = https://github.com/LiPlayer/PX4-Autopilot.git
 	branch = dia
+[submodule "ros2_ws/src/px4_msgs"]
+	path = ros2_ws/src/px4_msgs
+	url = https://github.com/PX4/px4_msgs.git
+[submodule "ros2_ws/src/ego-planner-swarm"]
+	path = ros2_ws/src/ego-planner-swarm
+	url = https://github.com/ZJU-FAST-Lab/ego-planner-swarm.git
+	branch = ros2_version
+
