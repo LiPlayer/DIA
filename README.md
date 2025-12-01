@@ -21,6 +21,7 @@ The `--recursive` flag will automatically clone all submodules including:
 - `PX4-Autopilot` (branch: dia)
 - `px4_msgs`
 - `ego-planner-swarm` (branch: ros2_version)
+- `Point-LIO` (LIO-SAM alternative for localization)
 
 ### 2. Install Dependencies
 
@@ -68,7 +69,7 @@ git submodule update --remote
 ## Package Structure
 
 - `sensor_interface`: LiDAR + IMU data provider
-- `lio_pipeline`: FAST-LIO wrapper
+- `Point-LIO`: HKU-MARS Point-LIO for localization
 - `esdf_mapping`: NVBlox ESDF mapping
 - `ego_planning`: EGO-Swarm planner (single UAV)
 - `trajectory_control`: B-spline → PX4 TrajectorySetpoint
