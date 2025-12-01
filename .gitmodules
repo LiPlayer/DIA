@@ -14,4 +14,4 @@
 
 [submodule "ros2_ws/src/lio_pipeline/Point-LIO"]
 	path = ros2_ws/src/lio_pipeline/Point-LIO
-	url = https://github.com/hku-mars/Point-LIO.git
+	url = https://github.com/dfloreaa/point_lio_ros2.git
