@@ -10,6 +10,6 @@
 	url = https://github.com/ZJU-FAST-Lab/ego-planner-swarm.git
 	branch = ros2_version
 
-[submodule "ros2_ws/src/Point-LIO"]
-	path = ros2_ws/src/Point-LIO
+[submodule "ros2_ws/src/lio_pipeline/Point-LIO"]
+	path = ros2_ws/src/lio_pipeline/Point-LIO
 	url = https://github.com/hku-mars/Point-LIO.git
