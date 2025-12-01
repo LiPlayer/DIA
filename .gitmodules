@@ -1,3 +1,4 @@
 [submodule "PX4-Autopilot"]
 	path = PX4-Autopilot
 	url = https://github.com/LiPlayer/PX4-Autopilot.git
+	branch = dia
