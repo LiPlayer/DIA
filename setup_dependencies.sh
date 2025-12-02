@@ -48,6 +48,46 @@ else
     echo ""
 fi
 
+# Install Point-LIO dependencies
+echo ""
+echo "Installing Point-LIO dependencies..."
+if [ -z "$ROS_DISTRO" ]; then
+    echo "Error: ROS_DISTRO is not set. Please source your ROS 2 installation first."
+    exit 1
+fi
+
+DEPENDENCIES=(
+    "ros-$ROS_DISTRO-pcl-ros"
+    "ros-$ROS_DISTRO-pcl-conversions"
+    "ros-$ROS_DISTRO-visualization-msgs"
+)
+
+for dep in "${DEPENDENCIES[@]}"; do
+    if dpkg -l | grep -q "$dep"; then
+        echo "$dep is already installed."
+    else
+        echo "Installing $dep..."
+        sudo apt-get install -y "$dep"
+    fi
+done
+
+# Install LIO-SAM dependencies
+EXTRA_DEPENDENCIES=(
+    "ros-$ROS_DISTRO-perception-pcl"
+    "ros-$ROS_DISTRO-pcl-msgs"
+    "ros-$ROS_DISTRO-vision-opencv"
+    "ros-$ROS_DISTRO-xacro"
+)
+for dep in "${EXTRA_DEPENDENCIES[@]}"; do
+    if dpkg -l | grep -q "$dep"; then
+        echo "$dep is already installed."
+    else
+        echo "Installing $dep..."
+        sudo apt-get install -y "$dep"
+    fi
+ done
+
+
 # Initialize git submodules
 echo ""
 echo "Initializing git submodules..."
