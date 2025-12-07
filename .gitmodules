@@ -9,8 +9,8 @@
 
 [submodule "ros2_ws/src/ego-planner-swarm"]
 	path = ros2_ws/src/ego-planner-swarm
-	url = https://github.com/ZJU-FAST-Lab/ego-planner-swarm.git
-	branch = ros2_version
+	url = https://github.com/LiPlayer/ego-planner-swarm.git
+	branch = dia
 
 [submodule "ros2_ws/src/lio_pipeline/Point-LIO"]
 	path = ros2_ws/src/lio_pipeline/Point-LIO
