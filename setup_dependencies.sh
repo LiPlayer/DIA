@@ -34,6 +34,14 @@ else
     exit 1
 fi
 
+# Determine correct ros-gz meta package (harmonic for humble on 22.04)
+ROS_GZ_PKG="ros-${TARGET_ROS_DISTRO}-ros-gz"
+if [[ "${TARGET_ROS_DISTRO}" == "humble" ]]; then
+    ROS_GZ_PKG="ros-humble-ros-gz-harmonic"
+elif [[ "${TARGET_ROS_DISTRO}" == "jazzy" ]]; then
+    ROS_GZ_PKG="ros-jazzy-ros-gz"
+fi
+
 # Install Micro XRCE-DDS Agent
 echo ""
 echo "Installing Micro XRCE-DDS Agent..."
@@ -74,6 +82,7 @@ APT_DEPENDENCIES=(
     "python3-ament-package"
     "python3-colcon-common-extensions"
     "python3-rosdep"
+    "${ROS_GZ_PKG}"
     "ros-$ROS_DISTRO-pcl-ros"
     "ros-$ROS_DISTRO-pcl-conversions"
     "ros-$ROS_DISTRO-visualization-msgs"
