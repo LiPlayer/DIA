@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Tiny helper to publish a 3D goal pose (map frame) to /move_base_simple/goal
+# Tiny helper to publish a 3D goal pose (map frame) to /ego_planner/single_target
 
 set -euo pipefail
 
@@ -26,7 +26,7 @@ print(f"{qx} {qy} {qz} {qw}")
 PY
 )"
 
-ros2 topic pub --once /move_base_simple/goal geometry_msgs/msg/PoseStamped "
+ros2 topic pub --once /ego_planner/single_target geometry_msgs/msg/PoseStamped "
 header:
   frame_id: map
 pose:
