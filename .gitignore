@@ -13,3 +13,6 @@ __pycache__/
 *.log
 *.swp
 .cache/
+
+# Editor settings
+.vscode/
