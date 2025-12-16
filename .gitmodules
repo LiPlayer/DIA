@@ -14,7 +14,7 @@
 
 [submodule "ros2_ws/src/lio_pipeline/Point-LIO"]
 	path = ros2_ws/src/lio_pipeline/Point-LIO
-	url = https://github.com/dfloreaa/point_lio_ros2.git
+	url = https://github.com/LiPlayer/point_lio_ros2.git
 [submodule "ros2_ws/src/lio_pipeline/kiss-icp"]
 	path = ros2_ws/src/lio_pipeline/kiss-icp
 	url = https://github.com/PRBonn/kiss-icp
