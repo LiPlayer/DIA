@@ -5,6 +5,12 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python Debugger: Attach using Process Id",
+            "type": "debugpy",
+            "request": "attach",
+            "port": 5678
+        },
+        {
             "name": "(gdb) Attach",
             "type": "cppdbg",
             "request": "attach",
@@ -23,6 +29,5 @@
                 }
             ]
         }
-
     ]
 }
