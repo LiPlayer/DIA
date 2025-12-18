@@ -12,12 +12,14 @@
 	url = https://github.com/LiPlayer/ego-planner-swarm.git
 	branch = dia
 
-[submodule "ros2_ws/src/lio_pipeline/Point-LIO"]
+[submodule "ros2_ws/src/Point-LIO"]
 	path = ros2_ws/src/Point-LIO
 	url = https://github.com/LiPlayer/point_lio_ros2.git
-[submodule "ros2_ws/src/lio_pipeline/LIO-SAM"]
+
+[submodule "ros2_ws/src/LIO-SAM"]
 	path = ros2_ws/src/LIO-SAM
 	url = https://github.com/LiPlayer/LIO-SAM.git
+	
 	branch = ros2
 [submodule "tools/gtsam-4.2.0"]
 	path = tools/gtsam-4.2.0
