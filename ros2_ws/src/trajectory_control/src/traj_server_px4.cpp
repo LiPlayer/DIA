@@ -85,73 +85,69 @@ public:
 
 private:
   void odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg) {
-    // 1. Position Conversion: ENU -> NED
-    Eigen::Vector3d pos_enu(msg->pose.pose.position.x,
-                            msg->pose.pose.position.y,
-                            msg->pose.pose.position.z);
-    Eigen::Vector3d pos_ned = enu_to_ned(pos_enu);
+    const uint64_t timestamp = this->now().nanoseconds() / 1000;
 
-    // 2. Orientation Conversion: Body FLU (ENU) -> Body FRD (NED)
-    // We have q_flu_to_enu from LIO-SAM
-    Eigen::Quaterniond q_flu_to_enu(
-        msg->pose.pose.orientation.w, msg->pose.pose.orientation.x,
-        msg->pose.pose.orientation.y, msg->pose.pose.orientation.z);
+    px4_msgs::msg::VehicleOdometry report{};
+    report.timestamp_sample = rclcpp::Time(msg->header.stamp).nanoseconds() / 1000;
+    report.timestamp = timestamp;
 
-    // Rotation from ENU world to NED world
-    // [0, 1, 0; 1, 0, 0; 0, 0, -1]
-    Eigen::Matrix3d R_enu_to_ned;
-    R_enu_to_ned << 0, 1, 0, 1, 0, 0, 0, 0, -1;
+    // odometry position is in ENU frame and needs to be converted to NED
+    report.pose_frame = px4_msgs::msg::VehicleOdometry::POSE_FRAME_NED;
+    report.position[0] = msg->pose.pose.position.y;
+    report.position[1] = msg->pose.pose.position.x;
+    report.position[2] = -msg->pose.pose.position.z;
 
-    // Rotation from Body FRD to Body FLU (180 deg x-axis rotation)
-    // [1, 0, 0; 0, -1, 0; 0, 0, -1]
-    Eigen::Matrix3d R_frd_to_flu;
-    R_frd_to_flu << 1, 0, 0, 0, -1, 0, 0, 0, -1;
+    // odometry orientation is "body FLU->ENU" and needs to be converted in
+    // "body FRD->NED"
+    const auto &pose_orientation = msg->pose.pose.orientation;
+    Eigen::Quaterniond q_flu_to_enu(pose_orientation.w, pose_orientation.x,
+                                   pose_orientation.y, pose_orientation.z);
+    Eigen::Quaterniond q_frd_to_ned;
+    rotateQuaternion(q_frd_to_ned, q_flu_to_enu);
+    q_frd_to_ned.normalize();
+    report.q[0] = q_frd_to_ned.w();
+    report.q[1] = q_frd_to_ned.x();
+    report.q[2] = q_frd_to_ned.y();
+    report.q[3] = q_frd_to_ned.z();
 
-    // q_frd_to_ned = R_enu_to_ned * q_flu_to_enu * R_frd_to_flu
-    Eigen::Quaterniond q_frd_to_ned(
-        R_enu_to_ned * q_flu_to_enu.toRotationMatrix() * R_frd_to_flu);
+    // odometry linear velocity is in body FLU and needs to be converted in
+    // body FRD
+    report.velocity_frame =
+        px4_msgs::msg::VehicleOdometry::VELOCITY_FRAME_BODY_FRD;
+    report.velocity[0] = msg->twist.twist.linear.x;
+    report.velocity[1] = -msg->twist.twist.linear.y;
+    report.velocity[2] = -msg->twist.twist.linear.z;
 
-    // 3. Velocity Conversion: ENU -> NED
-    Eigen::Vector3d vel_enu(msg->twist.twist.linear.x,
-                            msg->twist.twist.linear.y,
-                            msg->twist.twist.linear.z);
-    Eigen::Vector3d vel_ned = enu_to_ned(vel_enu);
+    // odometry angular velocity is in body FLU and need to be converted in
+    // body FRD
+    report.angular_velocity[0] = msg->twist.twist.angular.x;
+    report.angular_velocity[1] = -msg->twist.twist.angular.y;
+    report.angular_velocity[2] = -msg->twist.twist.angular.z;
 
-    // 4. Publish VehicleOdometry (Visual Odometry)
-    px4_msgs::msg::VehicleOdometry visual_odom;
-    visual_odom.timestamp = this->now().nanoseconds() / 1000;
-    visual_odom.timestamp_sample =
-        rclcpp::Time(msg->header.stamp).nanoseconds() / 1000;
+    // Variances: follow GZBridge mapping.
+    const auto &pose_cov = msg->pose.covariance;
+    const auto &twist_cov = msg->twist.covariance;
 
-    visual_odom.pose_frame = px4_msgs::msg::VehicleOdometry::POSE_FRAME_NED;
-    visual_odom.position = {(float)pos_ned.x(), (float)pos_ned.y(),
-                            (float)pos_ned.z()};
+    // VISION_POSITION_ESTIMATE covariance (x, y, z, roll, pitch, yaw).
+    report.position_variance = {
+        static_cast<float>(pose_cov[7]),  // Y -> X_ned
+        static_cast<float>(pose_cov[0]),  // X -> Y_ned
+        static_cast<float>(pose_cov[14]), // Z
+    };
+    report.orientation_variance = {
+        static_cast<float>(pose_cov[21]), // roll
+        static_cast<float>(pose_cov[28]), // pitch
+        static_cast<float>(pose_cov[35]), // yaw
+    };
+    report.velocity_variance = {
+        static_cast<float>(twist_cov[7]),  // Y -> X_ned
+        static_cast<float>(twist_cov[0]),  // X -> Y_ned
+        static_cast<float>(twist_cov[14]), // Z
+    };
 
-    visual_odom.q = {(float)q_frd_to_ned.w(), (float)q_frd_to_ned.x(),
-                     (float)q_frd_to_ned.y(), (float)q_frd_to_ned.z()};
+    report.quality = 100;
 
-    visual_odom.velocity_frame =
-        px4_msgs::msg::VehicleOdometry::VELOCITY_FRAME_NED;
-    visual_odom.velocity = {(float)vel_ned.x(), (float)vel_ned.y(),
-                            (float)vel_ned.z()};
-
-    // Angular velocity: Body FLU -> Body FRDk
-    visual_odom.angular_velocity = {(float)msg->twist.twist.angular.x,
-                                    -(float)msg->twist.twist.angular.y,
-                                    -(float)msg->twist.twist.angular.z};
-
-    // Set variances (tune these if EKF rejects fusion)
-    float pos_var = 0.001f; // High confidence
-    float vel_var = 0.001f;
-    float ang_var = 0.001f;
-    visual_odom.position_variance = {pos_var, pos_var, pos_var};
-    visual_odom.velocity_variance = {vel_var, vel_var, vel_var};
-    visual_odom.orientation_variance = {ang_var, ang_var, ang_var};
-
-    visual_odom.reset_counter = 0; // handled by EKF
-    visual_odom.quality = 100;     // 100% quality
-
-    visual_odom_pub_->publish(visual_odom);
+    visual_odom_pub_->publish(report);
   }
 
   void bsplineCallback(const traj_utils::msg::Bspline::SharedPtr msg) {
@@ -324,6 +320,16 @@ private:
     last_yaw_dot_ = yaw_dot;
 
     return {yaw, yaw_dot};
+  }
+
+  static void rotateQuaternion(Eigen::Quaterniond &q_frd_to_ned,
+                               const Eigen::Quaterniond &q_flu_to_enu) {
+    // FLU (ROS) to FRD (PX4) static rotation
+    static const Eigen::Quaterniond q_flu_to_frd(0.0, 1.0, 0.0, 0.0);
+    // ENU to NED rotation (symmetric)
+    static const Eigen::Quaterniond q_enu_to_ned(0.0, 0.70711, 0.70711, 0.0);
+
+    q_frd_to_ned = q_enu_to_ned * q_flu_to_enu * q_flu_to_frd.conjugate();
   }
 
   // Publishers
