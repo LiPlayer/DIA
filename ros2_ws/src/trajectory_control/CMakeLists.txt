@@ -13,7 +13,11 @@ find_package(bspline_opt REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(Eigen3 REQUIRED)
 
-add_executable(traj_server_px4 src/traj_server_px4.cpp)
+add_executable(traj_server_px4
+  src/main.cpp
+  src/controller.cpp
+  src/vio_bridge.cpp
+)
 ament_target_dependencies(traj_server_px4
   rclcpp
   px4_msgs
