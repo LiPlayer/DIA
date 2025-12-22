@@ -14,8 +14,7 @@ def generate_launch_description():
         
         Node(
             package='trajectory_control',
-            executable='traj_server_px4',
-            name='traj_server_px4',
+            executable='trajectory_controller',
             output='screen',
             parameters=[{
                 'time_forward': LaunchConfiguration('time_forward'),

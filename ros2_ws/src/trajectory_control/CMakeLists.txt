@@ -13,25 +13,25 @@ find_package(bspline_opt REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(Eigen3 REQUIRED)
 
-add_executable(traj_server_px4
+add_executable(trajectory_controller
   src/main.cpp
   src/controller.cpp
   src/vio_bridge.cpp
 )
-ament_target_dependencies(traj_server_px4
+ament_target_dependencies(trajectory_controller
   rclcpp
   px4_msgs
   traj_utils
   bspline_opt
   nav_msgs
 )
-target_include_directories(traj_server_px4 PUBLIC
+target_include_directories(trajectory_controller PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
   ${EIGEN3_INCLUDE_DIRS}
 )
 
-install(TARGETS traj_server_px4
+install(TARGETS trajectory_controller
   DESTINATION lib/${PROJECT_NAME}
 )
 
