@@ -38,6 +38,7 @@ TrajController::TrajController() : Node("controller") {
   offboard_timer_ = this->create_wall_timer(
       100ms, std::bind(&TrajController::offboardCallback, this));
 
+  time_last_ = this->get_clock()->now();
   last_yaw_ = 0.0;
   last_yaw_dot_ = 0.0;
 
@@ -68,7 +69,8 @@ void TrajController::bsplineCallback(
   traj_.push_back(traj_[1].getDerivative());
 
   traj_duration_ = traj_[0].getTimeSum();
-  start_time_ = rclcpp::Time(msg->start_time);
+  start_time_ =
+      rclcpp::Time(msg->start_time, this->get_clock()->get_clock_type());
   traj_id_ = msg->traj_id;
   receive_traj_ = true;
 
